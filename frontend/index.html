@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GhostLab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Sora:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="nebula"></div>
+    <header>
+      <p class="tag">Digital Twin Interface</p>
+      <h1>GhostLab</h1>
+      <p>Predict comfort and energy before touching a switch.</p>
+    </header>
+
+    <main>
+      <section class="panel controls">
+        <h2>Room Parameters</h2>
+        <div class="grid" id="inputs"></div>
+        <div class="actions">
+          <select id="preset"></select>
+          <button id="run">Run Simulation</button>
+        </div>
+      </section>
+
+      <section class="panel output">
+        <h2>Prediction Core</h2>
+        <div class="result" id="result"></div>
+        <canvas id="chart" width="620" height="240"></canvas>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
