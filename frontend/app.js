@@ -3,6 +3,10 @@ const inputsHost = document.getElementById("inputs");
 const presetSelect = document.getElementById("preset");
 const runBtn = document.getElementById("run");
 const resultHost = document.getElementById("result");
+const adviceHost = document.getElementById("advice");
+const moodChips = document.getElementById("mood-chips");
+const comfortDial = document.getElementById("comfortDial");
+const comfortDialValue = document.getElementById("comfortDialValue");
 const canvas = document.getElementById("chart");
 const ctx = canvas.getContext("2d");
 
@@ -22,6 +26,54 @@ FIELDS.forEach(([id, label, value]) => {
   inputsHost.appendChild(node);
 });
 
+function applyTilt() {
+  document.querySelectorAll("[data-tilt]").forEach((card) => {
+    card.addEventListener("mousemove", (e) => {
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      card.style.transform = `rotateY(${x * 10}deg) rotateX(${y * -10}deg)`;
+    });
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = "rotateY(0deg) rotateX(0deg)";
+    });
+  });
+}
+
+function setupStarfield() {
+  const c = document.getElementById("starfield");
+  const g = c.getContext("2d");
+  const dpr = Math.max(window.devicePixelRatio || 1, 1);
+  function resize() {
+    c.width = innerWidth * dpr;
+    c.height = innerHeight * dpr;
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  window.addEventListener("resize", resize);
+
+  const stars = Array.from({ length: 110 }, () => ({
+    x: Math.random() * innerWidth,
+    y: Math.random() * innerHeight,
+    r: Math.random() * 1.7,
+    s: Math.random() * 0.35 + 0.05,
+  }));
+
+  function draw() {
+    g.clearRect(0, 0, innerWidth, innerHeight);
+    stars.forEach((s) => {
+      s.y += s.s;
+      if (s.y > innerHeight) s.y = -2;
+      g.fillStyle = "rgba(255,255,255,.7)";
+      g.beginPath();
+      g.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      g.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
 async function jf(url, options = {}) {
   const res = await fetch(url, { headers: { "Content-Type": "application/json" }, ...options });
   if (!res.ok) throw new Error(await res.text());
@@ -38,9 +90,14 @@ function metric(title, val, suffix = "") {
 
 function paintChart(points) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.strokeStyle = "#5e89ff";
-  ctx.lineWidth = 2;
   const maxCost = Math.max(...points.map((p) => p.predicted_cost), 15);
+
+  const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  grad.addColorStop(0, "#63f5c9");
+  grad.addColorStop(1, "#5e89ff");
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = 2.3;
+
   points.forEach((p, i) => {
     const x = (i / Math.max(points.length - 1, 1)) * (canvas.width - 40) + 20;
     const y = canvas.height - (p.predicted_cost / maxCost) * (canvas.height - 40) - 20;
@@ -49,7 +106,7 @@ function paintChart(points) {
   });
   ctx.stroke();
 
-  ctx.fillStyle = "#63f5c9";
+  ctx.fillStyle = "#ff9d66";
   points.forEach((p, i) => {
     const x = (i / Math.max(points.length - 1, 1)) * (canvas.width - 40) + 20;
     const y = canvas.height - (p.predicted_cost / maxCost) * (canvas.height - 40) - 20;
@@ -57,6 +114,15 @@ function paintChart(points) {
     ctx.arc(x, y, 3.4, 0, Math.PI * 2);
     ctx.fill();
   });
+}
+
+function renderMoodChips(out) {
+  const modes = [];
+  if (out.comfort_score >= 80) modes.push("Comfort Optimized");
+  if (out.predicted_cost <= 8) modes.push("Budget Friendly");
+  if (out.predicted_cost > 12) modes.push("High Energy Draw");
+  if (!modes.length) modes.push("Balanced Mode");
+  moodChips.innerHTML = modes.map((m) => `<span>${m}</span>`).join("");
 }
 
 async function loadPresets() {
@@ -83,6 +149,11 @@ async function runSimulation() {
     metric("Cost", out.predicted_cost, " INR"),
   ].join("");
 
+  adviceHost.textContent = out.advice;
+  comfortDial.style.setProperty("--value", out.comfort_score);
+  comfortDialValue.textContent = out.comfort_score;
+  renderMoodChips(out);
+
   const h = await jf(`${API}/history`);
   paintChart(h.points);
 }
@@ -90,6 +161,8 @@ async function runSimulation() {
 runBtn.addEventListener("click", runSimulation);
 
 (async function init() {
+  applyTilt();
+  setupStarfield();
   await loadPresets();
   await runSimulation();
 })();

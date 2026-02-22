@@ -6,31 +6,41 @@
     <title>GhostLab</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Sora:wght@400;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Sora:wght@400;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="nebula"></div>
+    <canvas id="starfield" aria-hidden="true"></canvas>
+    <div class="aurora" aria-hidden="true"></div>
+
     <header>
-      <p class="tag">Digital Twin Interface</p>
+      <p class="tag">Predictive Digital Twin</p>
       <h1>GhostLab</h1>
-      <p>Predict comfort and energy before touching a switch.</p>
+      <p>Simulate comfort, cost, and room mood before changing a single switch.</p>
     </header>
 
     <main>
-      <section class="panel controls">
-        <h2>Room Parameters</h2>
+      <section class="panel controls tilt" data-tilt>
+        <h2>Scenario Studio</h2>
         <div class="grid" id="inputs"></div>
         <div class="actions">
           <select id="preset"></select>
           <button id="run">Run Simulation</button>
         </div>
+        <div class="chips" id="mood-chips"></div>
       </section>
 
-      <section class="panel output">
+      <section class="panel output tilt" data-tilt>
         <h2>Prediction Core</h2>
         <div class="result" id="result"></div>
-        <canvas id="chart" width="620" height="240"></canvas>
+        <div class="advice" id="advice"></div>
+        <div class="viz-grid">
+          <div class="dial" id="comfortDial">
+            <span>Comfort</span>
+            <strong id="comfortDialValue">0</strong>
+          </div>
+          <canvas id="chart" width="620" height="220"></canvas>
+        </div>
       </section>
     </main>
 
